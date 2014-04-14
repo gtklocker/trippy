@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Trippy</title>
+        <style>
+            canvas {
+                display: block;
+                margin: auto;
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas width="600" height="600"></canvas>
+
+        <script src="jquery.min.js"></script>
+        <script src="jquery.min.map"></script>
+        <script>
+            var canvas = $("canvas")[0];
+            var ctx = canvas.getContext("2d");
+            var W = canvas.width, H = canvas.height;
+
+            var RADIUS = 8;
+            var DISTANCE = 2 * RADIUS;
+            var ROW_H = RADIUS + DISTANCE, ROW_W = RADIUS + DISTANCE;
+            var NUM_ROWS = H / ROW_H, NUM_COLUMNS = W / ROW_W;
+            var done = false;
+            var universe = [];
+            function Particle(x, y) {
+                this.x = x;
+                this.y = y;
+
+                this.dd = 0;
+                this.theta = 0;
+            }
+            Particle.prototype = {
+                constructor: Particle,
+                integrate: function(dt) {
+                    if (Math.abs(this.dd) > 1) {
+                        this.dd = 0;
+                        done = true;
+                        return;
+                    }
+                    this.dd += dt / 1000;
+                },
+                draw: function() {
+                    ctx.beginPath();
+                    ctx.fillStyle = "black";
+                    ctx.arc((this.x + Math.cos(this.theta) * this.dd) * ROW_W,
+                        (this.y + Math.sin(this.theta) * this.dd) * ROW_H, RADIUS, 0, 2 * Math.PI, false);
+                    ctx.fill();
+                }
+            };
+
+            for (var y = -10; y <= NUM_COLUMNS + 10; ++y) {
+                for (var x = -10; x <= NUM_ROWS + 10; ++x) {
+                    universe.push(new Particle(x, y));
+                    var u = universe[universe.length - 1];
+                }
+            }
+
+            var last = Date.now();
+            function play() {
+                var dt = Date.now() - last;
+                ctx.clearRect(-W, -H, 3 * W, 3 * H);
+                for (var i = 0; i < universe.length; ++i) {
+                    universe[i].integrate(dt);
+                    universe[i].draw();
+                }
+
+                requestAnimationFrame(play);
+            }
+            requestAnimationFrame(play);
+        </script>
+    </body>
+</html>
