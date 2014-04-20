@@ -3,15 +3,27 @@
     <head>
         <title>Trippy</title>
         <style>
+            * {
+                margin: 0;
+                padding: 0;
+            }
+            html, body {
+                width: 100%;
+                height: 100%;
+            }
             canvas {
                 display: block;
-                margin: auto;
-                border: 1px solid black;
+            }
+            iframe {
+                opacity: 0;
+                display: none;
             }
         </style>
     </head>
     <body>
-        <canvas width="600" height="600"></canvas>
+        <iframe src="//www.youtube.com/embed/7bNVM09FdtA?version=3&autoplay=1&loop=1&playlist=7bNVM09FdtA">
+        </iframe>
+        <canvas></canvas>
 
         <script src="jquery.min.js"></script>
         <script src="jquery.min.map"></script>
@@ -20,21 +32,23 @@
         <script>
             var canvas = $("canvas")[0];
             var ctx = canvas.getContext("2d");
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
             var W = canvas.width, H = canvas.height;
             var universe = [];
 
-            var RADIUS = 8;
+            var RADIUS = 6;
             var DISTANCE = 2 * RADIUS;
             var ROW_H = RADIUS + DISTANCE, ROW_W = RADIUS + DISTANCE;
-            var NUM_ROWS = H / ROW_H, NUM_COLUMNS = W / ROW_W;
-            var done = false;
-            var universe = [];
+            var NUM_ROWS = H / ROW_H + 10, NUM_COLUMNS = W / ROW_W + 10;
+            var SPEED = 300;
             function Particle(x, y) {
                 this.x = x;
                 this.y = y;
                 this.gridX = x / ROW_W;
                 this.gridY = y / ROW_H;
 
+                this.color = "white";
                 this.dd = 0;
                 this.theta = 0;
                 //this.theta = Math.atan(2);
