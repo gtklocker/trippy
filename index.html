@@ -15,10 +15,13 @@
 
         <script src="jquery.min.js"></script>
         <script src="jquery.min.map"></script>
+        <script src="underscore-min.js"></script>
+        <!--<script src="hidpi-canvas.min.js"></script>-->
         <script>
             var canvas = $("canvas")[0];
             var ctx = canvas.getContext("2d");
             var W = canvas.width, H = canvas.height;
+            var universe = [];
 
             var RADIUS = 8;
             var DISTANCE = 2 * RADIUS;
@@ -93,22 +96,67 @@
                 }
             };
 
-            for (var y = -10; y <= NUM_COLUMNS + 10; ++y) {
-                for (var x = -10; x <= NUM_ROWS + 10; ++x) {
-                    universe.push(new Particle(x, y));
-                    var u = universe[universe.length - 1];
-                }
-            }
+            _.range(-5, NUM_ROWS - 5).map(function(y) {
+                _.range(-5, NUM_COLUMNS - 5).map(function(x) {
+                    var particle = new Particle(x * ROW_W, y * ROW_H);
+                    if (y % 2 == 0) {
+                        // tilted
+                        particle.x += RADIUS * 1.5;
+                    }
 
-            var last = Date.now();
+                    universe.push(particle);
+                });
+            });
+
+            var last = _.now();
+            var t = 0;
+
+            _.each(universe, function(mesh) {
+                mesh.setHorizontal();
+            });
+
             function play() {
-                var dt = Date.now() - last;
-                ctx.clearRect(-W, -H, 3 * W, 3 * H);
-                for (var i = 0; i < universe.length; ++i) {
-                    universe[i].integrate(dt);
-                    universe[i].draw();
+                var dt = _.now() - last;
+                t += dt;
+                ctx.fillStyle = "black";
+                ctx.fillRect(-W, -H, 3 * W, 3 * H);
+
+                _.each(universe, function(mesh) {
+                    mesh.integrate(t);
+                    mesh.draw();
+                });
+
+                if (_.any(universe, function(mesh) {
+                    return mesh.theta != 0;
+                })) {
+                    if (t >= 980 / (1000 / SPEED)) {
+                        if (_.any(universe, function(mesh) {
+                            return mesh.theta < 0;
+                        })) {
+                            _.each(universe, function(mesh) {
+                                mesh.setDiagLeft();
+                            });
+                        }
+                        else {
+                            _.each(universe, function(mesh) {
+                                mesh.setHorizontal();
+                            });
+                        }
+
+                        t = 0;
+                    }
+                }
+                else {
+                    if (t >= 880 / (1000 / SPEED)) {
+                        _.each(universe, function(mesh) {
+                            mesh.setDiagRight();
+                        });
+
+                        t = 0;
+                    }
                 }
 
+                last = _.now();
                 requestAnimationFrame(play);
             }
             requestAnimationFrame(play);
