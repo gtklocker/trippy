@@ -29,25 +29,66 @@
             function Particle(x, y) {
                 this.x = x;
                 this.y = y;
+                this.gridX = x / ROW_W;
+                this.gridY = y / ROW_H;
 
                 this.dd = 0;
                 this.theta = 0;
+                //this.theta = Math.atan(2);
+                this.rowParity = 1;
+                this.diagonalParity = 1;
+                this.multiplier = 0;
             }
             Particle.prototype = {
                 constructor: Particle,
-                integrate: function(dt) {
-                    if (Math.abs(this.dd) > 1) {
-                        this.dd = 0;
-                        done = true;
-                        return;
+                setHorizontal: function() {
+                    if (this.gridY % 2 == 0) {
+                        this.rowParity = -1;
+                        //this.color = "red";
                     }
-                    this.dd += dt / 1000;
+                    else {
+                        this.rowParity = 1;
+                        //this.color = "black";
+                    }
+
+                    this.multiplier = this.rowParity;
+                    this.theta = 0;
+                },
+                setDiagRight: function() {
+                    var parity = (this.gridX + this.gridY) + ((this.gridY + 1) % 4 >= 2);
+                    if (parity % 2 == 0) {
+                        this.diagonalParity = -1;
+                        //this.color = "red";
+                    }
+                    else {
+                        this.diagonalParity = 1;
+                        //this.color = "black";
+                    }
+                    this.theta = -Math.atan(2);
+                    this.multiplier = this.diagonalParity;
+                },
+                setDiagLeft: function() {
+                    var parity = (this.gridX + this.gridY) + ((this.gridY) % 4 >= 2);
+                    if (parity % 2 == 0) {
+                        this.diagonalParity = -1;
+                        //this.color = "red";
+                    }
+                    else {
+                        this.diagonalParity = 1;
+                        //this.color = "black";
+                    }
+                    this.theta = Math.atan(2);
+                    this.multiplier = this.diagonalParity;
+                },
+                integrate: function(t) {
+                    var tween = t / SPEED;
+                    this.dd = this.multiplier * tween * tween * Math.sqrt(ROW_H * ROW_H + ROW_W * ROW_W / 4);
                 },
                 draw: function() {
                     ctx.beginPath();
-                    ctx.fillStyle = "black";
-                    ctx.arc((this.x + Math.cos(this.theta) * this.dd) * ROW_W,
-                        (this.y + Math.sin(this.theta) * this.dd) * ROW_H, RADIUS, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = this.color;
+                    ctx.arc((this.x + Math.cos(this.theta) * this.dd),
+                            (this.y + Math.sin(this.theta) * this.dd), RADIUS, 0, 2 * Math.PI, false);
                     ctx.fill();
                 }
             };
